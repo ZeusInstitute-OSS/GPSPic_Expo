@@ -1,11 +1,66 @@
-# Sample Snack app
+# GPSPic
 
-Open the `App.js` file to start writing some code. You can preview the changes directly on your phone or tablet by scanning the **QR code** or use the iOS or Android emulators. When you're done, click **Save** and share the link!
+Except it is rewritten in React Native with Expo go support!
 
-When you're ready to see everything that Expo provides (or if you want to use your own editor) you can **Download** your project and use it with [expo cli](https://docs.expo.dev/get-started/installation/#expo-cli)).
+Open Source GPS Camera
 
-All projects created in Snack are publicly available, so you can easily share the link to this project via link, or embed it on a web page with the `<>` button.
+Mark the location of activities by embedding data onto the image. Ensure things were done where they were done and when they were done!
 
-If you're having problems, you can tweet to us [@expo](https://twitter.com/expo) or ask in our [forums](https://forums.expo.dev/c/expo-dev-tools/61) or [Discord](https://chat.expo.dev/).
+Features:
+- Simple
+- Open Source
+- Multi-Platform(web, iOS, android)
 
-Snack is Open Source. You can find the code on the [GitHub repo](https://github.com/expo/snack).
+### Build Status:
+Not implemented
+
+[![Android CI](https://github.com/ZeusInstitute-OSS/GPSPic_expo/actions/workflows/main.yml/badge.svg)](https://github.com/ZeusInstitute-OSS/GPSPic_expo/actions/workflows/main.yml)
+
+# Roadmap:
+✅ Done
+
+*️⃣ Being worked on
+
+❌ Not Done
+
+Initial App:
+- Location Bar: ✅
+- Saving image: *️⃣
+- File Picker for selecting output: ❌
+- Proportions/Adjusting to different screens: *️⃣
+- Flash Modes: ✅
+- Permission Handling: *️⃣
+- Move away from legacy expo-camera: ❌
+- Support being called from another app(and returning that pic): ❌
+
+## Testing
+
+### Clone this repo
+
+You can do this using:
+```
+git clone https://github.com/ZeusInstitute-OSS/TrainerApp TrainerApp
+```
+
+Now, enter the directory using `cd TrainerApp`
+### Set up nvm 
+
+You can do this by following [these](https://github.com/nvm-sh/nvm#installing-and-updating) instructions
+
+
+### Use recent node using nvm
+```
+nvm use node
+```
+### Install Deps
+
+```
+npx expo install @react-navigation/native @react-navigation/stack react-native-screens react-native-safe-area-context @react-native-async-storage/async-storage expo-system-ui expo-screen-orientation
+```
+
+### Run App
+```
+npx expo start --tunnel
+```
+
+Use the expo go app to connect to it

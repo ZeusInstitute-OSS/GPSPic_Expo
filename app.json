@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "smelly-green-crackers",
-    "slug": "snack-e363ad6d-3345-4281-9a09-92c3f7f6af8b",
+    "name": "GPSPic",
+    "slug": "GPSPic",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -12,13 +12,15 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.zeusinstitute.GPSPic"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.zeusinstitute.GPSPic"
     },
     "web": {
       "favicon": "./assets/favicon.png"
