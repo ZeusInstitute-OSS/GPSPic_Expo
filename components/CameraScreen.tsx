@@ -3,6 +3,8 @@ import { StyleSheet, View, TouchableOpacity, Text, Alert } from 'react-native';
 import { Camera } from 'expo-camera/legacy';
 import { Ionicons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
+import * as MediaLibrary from 'expo-media-library';
+import { captureRef } from 'react-native-view-shot';
 import useLocation from '../hooks/useLocation';
 import useCamera from '../hooks/useCamera';
 import GridOverlay from './GridOverlay';
