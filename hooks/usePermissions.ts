@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Camera } from 'expo-camera';
+import { Camera } from 'expo-camera/legacy';
 import * as Location from 'expo-location';
 import * as MediaLibrary from 'expo-media-library';
 
