@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Dimensions } from 'react-native';
 
 interface GridOverlayProps {
   type: 'none' | 'thirds' | 'golden';
@@ -7,6 +7,10 @@ interface GridOverlayProps {
 
 export default function GridOverlay({ type }: GridOverlayProps) {
   if (type === 'none') return null;
+
+  const { width, height } = Dimensions.get('window');
+
+  const goldenRatio = 1.618;
 
   return (
     <View style={styles.gridContainer}>
@@ -20,8 +24,10 @@ export default function GridOverlay({ type }: GridOverlayProps) {
       )}
       {type === 'golden' && (
         <>
-          <View style={[styles.gridLine, { left: '61.8%' }]} />
-          <View style={[styles.gridLine, { top: '61.8%', width: '100%', height: 1 }]} />
+          <View style={[styles.gridLine, { left: `${100 / goldenRatio}%` }]} />
+          <View style={[styles.gridLine, { left: `${100 - (100 / goldenRatio)}%` }]} />
+          <View style={[styles.gridLine, { top: `${100 / goldenRatio}%`, width: '100%', height: 1 }]} />
+          <View style={[styles.gridLine, { top: `${100 - (100 / goldenRatio)}%`, width: '100%', height: 1 }]} />
         </>
       )}
     </View>
