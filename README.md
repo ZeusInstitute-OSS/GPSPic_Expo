@@ -55,7 +55,7 @@ nvm use node
 ### Install Deps
 
 ```
-npx expo install @react-navigation/native @react-navigation/stack react-native-screens react-native-safe-area-context @react-native-async-storage/async-storage expo-system-ui expo-screen-orientation expo-screen-orientation
+npx expo install expo-status-bar react-native react-native-paper @expo/vector-icons expo-camera expo-location expo-media-library expo-file-system expo-sharing expo-image-manipulator expo-screen-orientation
 ```
 
 ### Run App
