@@ -58,21 +58,20 @@ export default function CameraScreen() {
   };
 
   const handleCapture = async () => {
-    if (previewRef.current) {
-      try {
-        const uri = await captureRef(previewRef, {
-          format: 'jpg',
-          quality: 0.8,
-        });
-
-        await MediaLibrary.saveToLibraryAsync(uri);
+    try {
+      const photo = await takePicture();
+      if (photo) {
+        await MediaLibrary.saveToLibraryAsync(photo.uri);
         Alert.alert("Success", "Photo saved to gallery!");
-      } catch (error) {
-        console.error("Error taking picture:", error);
-        Alert.alert("Error", "Failed to take picture. Please try again.");
+      } else {
+        throw new Error("Failed to take picture");
       }
+    } catch (error) {
+      console.error("Error taking picture:", error);
+      Alert.alert("Error", "Failed to take picture. Please try again.");
     }
   };
+
 
   const openGallery = async () => {
     const { status } = await MediaLibrary.requestPermissionsAsync();
@@ -99,7 +98,6 @@ export default function CameraScreen() {
           styles.cameraContainer,
           { width: cameraDimensions.width, height: cameraDimensions.height }
         ]}
-        ref={previewRef}
       >
         <Camera 
           style={StyleSheet.absoluteFillObject}
