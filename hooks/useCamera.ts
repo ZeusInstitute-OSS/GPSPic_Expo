@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Camera, CameraType, FlashMode } from 'expo-camera/legacy';
 
 export default function useCamera(cameraRef: React.RefObject<Camera>) {
@@ -25,6 +25,7 @@ export default function useCamera(cameraRef: React.RefObject<Camera>) {
       const photo = await cameraRef.current.takePictureAsync();
       return photo;
     }
+    return null;
   };
 
   return { cameraType, flashMode, zoom, toggleCameraType, toggleFlash, takePicture };

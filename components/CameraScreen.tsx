@@ -86,9 +86,9 @@ export default function CameraScreen() {
 
   const getFlashIcon = () => {
     switch (flashMode) {
-      case Camera.Constants.FlashMode.on: return 'flash';
-      case Camera.Constants.FlashMode.off: return 'flash-off';
-      case Camera.Constants.FlashMode.auto: return 'flash-auto';
+      case Camera.Constants.FlashMode.on: return 'bolt';
+      case Camera.Constants.FlashMode.off: return 'xmark';
+      case Camera.Constants.FlashMode.auto: return 'cloud-bolt';
     }
   };
 
@@ -135,7 +135,7 @@ export default function CameraScreen() {
           <View style={styles.captureButtonInner} />
         </TouchableOpacity>
         <TouchableOpacity style={styles.iconButton} onPress={toggleCameraType}>
-          <FontAwesome name="camera" size={24} color="white" />
+          <FontAwesome name="repeat" size={24} color="white" />
         </TouchableOpacity>
       </View>
     </View>

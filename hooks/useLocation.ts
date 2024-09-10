@@ -11,35 +11,27 @@ export default function useLocation() {
   });
 
   useEffect(() => {
-    let isMounted = true;
+    updateLocation();
+  }, []);
 
-    const getLocationAsync = async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync();
+  const updateLocation = async () => {
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
         console.error('Permission to access location was denied');
         return;
       }
 
-      try {
-        const location = await Location.getCurrentPositionAsync({});
-        const [address] = await Location.reverseGeocodeAsync({
-          latitude: location.coords.latitude,
-          longitude: location.coords.longitude,
-        });
-        if (isMounted) {
-          setLocationInfo({ location, address });
-        }
-      } catch (error) {
-        console.error("Error getting location:", error);
-      }
-    };
-
-    getLocationAsync();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+      const location = await Location.getCurrentPositionAsync({});
+      const [address] = await Location.reverseGeocodeAsync({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      });
+      setLocationInfo({ location, address });
+    } catch (error) {
+      console.error("Error updating location:", error);
+    }
+  };
 
   return locationInfo;
 }
