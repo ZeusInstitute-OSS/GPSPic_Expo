@@ -18,7 +18,7 @@ export default function CameraScreen() {
   const [isRatioSet, setIsRatioSet] = useState(false);
   const [cameraDimensions, setCameraDimensions] = useState({ width: 0, height: 0 });
   const cameraRef = useRef(null);
-  const previewRef = useRef(null);
+  const captureViewRef = useRef(null);
   const locationInfo = useLocation();
   const { cameraType, flashMode, zoom, toggleCameraType, toggleFlash, takePicture } = useCamera(cameraRef);
 
@@ -58,27 +58,28 @@ export default function CameraScreen() {
   };
 
   const handleCapture = async () => {
-    try {
-      const photo = await takePicture();
-      if (photo) {
-        await MediaLibrary.saveToLibraryAsync(photo.uri);
+    if (captureViewRef.current) {
+      try {
+        const uri = await captureRef(captureViewRef, {
+          format: 'jpg',
+          quality: 0.8,
+        });
+        await MediaLibrary.saveToLibraryAsync(uri);
         Alert.alert("Success", "Photo saved to gallery!");
-      } else {
-        throw new Error("Failed to take picture");
+      } catch (error) {
+        console.error("Error taking picture:", error);
+        Alert.alert("Error", "Failed to take picture. Please try again.");
       }
-    } catch (error) {
-      console.error("Error taking picture:", error);
-      Alert.alert("Error", "Failed to take picture. Please try again.");
     }
-  };
+    };
 
 
-  const openGallery = async () => {
-    const { status } = await MediaLibrary.requestPermissionsAsync();
-    if (status === 'granted') {
-      const asset = await MediaLibrary.getAssetsAsync({ first: 1, sortBy: ['creationTime'] });
-      if (asset.assets.length > 0) {
-        await MediaLibrary.openAssetAsync(asset.assets[0].id);
+    const openGallery = async () => {
+      const { status } = await MediaLibrary.requestPermissionsAsync();
+      if (status === 'granted') {
+        const asset = await MediaLibrary.getAssetsAsync({ first: 1, sortBy: ['creationTime'] });
+        if (asset.assets.length > 0) {
+          await MediaLibrary.openAssetAsync(asset.assets[0].id);
       }
     }
   };
@@ -94,6 +95,7 @@ export default function CameraScreen() {
   return (
     <View style={styles.container}>
       <View 
+        ref={captureViewRef}
         style={[
           styles.cameraContainer,
           { width: cameraDimensions.width, height: cameraDimensions.height }
@@ -109,21 +111,25 @@ export default function CameraScreen() {
           onCameraReady={prepareRatio}
         />
         <GridOverlay type={gridType} />
-        <View style={styles.topButtonContainer}>
-          <TouchableOpacity style={styles.iconButton} onPress={toggleFlash}>
-            <FontAwesome name={getFlashIcon()} size={24} color="white" />
-          </TouchableOpacity>
-          <Picker
-            selectedValue={gridType}
-            style={styles.picker}
-            onValueChange={(itemValue) => setGridType(itemValue)}
-          >
-            <Picker.Item label="No Grid" value="none" />
-            <Picker.Item label="Rule of Thirds" value="thirds" />
-            <Picker.Item label="Golden Ratio" value="golden" />
-          </Picker>
-        </View>
-        <LocationInfo location={locationInfo.location} address={locationInfo.address} />
+        <LocationInfo 
+          location={locationInfo.location} 
+          address={locationInfo.address} 
+          style={styles.locationOverlay}
+        />
+      </View>
+      <View style={styles.topButtonContainer}>
+        <TouchableOpacity style={styles.iconButton} onPress={toggleFlash}>
+          <FontAwesome name={getFlashIcon()} size={24} color="white" />
+        </TouchableOpacity>
+        <Picker
+          selectedValue={gridType}
+          style={styles.picker}
+          onValueChange={(itemValue) => setGridType(itemValue)}
+        >
+          <Picker.Item label="No Grid" value="none" />
+          <Picker.Item label="Rule of Thirds" value="thirds" />
+          <Picker.Item label="Golden Ratio" value="golden" />
+        </Picker>
       </View>
       <View style={styles.bottomButtonContainer}>
         <TouchableOpacity style={styles.iconButton} onPress={openGallery}>
@@ -187,5 +193,11 @@ const styles = StyleSheet.create({
     width: 150,
     color: 'white',
     backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  locationOverlay: {
+    position: 'absolute',
+    bottom: 20,
+    left: 20,
+    right: 20,
   },
 });
