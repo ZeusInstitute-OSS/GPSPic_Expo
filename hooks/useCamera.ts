@@ -1,9 +1,9 @@
-import { useState, useRef } from 'react';
+import { useState, RefObject } from 'react';
 import { Camera, CameraType, FlashMode } from 'expo-camera';
 import * as MediaLibrary from 'expo-media-library';
 import * as ImageManipulator from 'expo-image-manipulator';
 
-export default function useCamera(cameraRef: React.RefObject<Camera>) {
+export default function useCamera(cameraRef: RefObject<Camera>) {
   const [cameraType, setCameraType] = useState<CameraType>(CameraType.back);
   const [flashMode, setFlashMode] = useState<FlashMode>(FlashMode.off);
   const [zoom, setZoom] = useState(0);

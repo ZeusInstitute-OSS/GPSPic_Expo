@@ -10,7 +10,7 @@ import LocationInfo from './LocationInfo';
 
 export default function CameraScreen() {
   const [gridType, setGridType] = useState('none');
-  const cameraRef = useRef<Camera>(null);
+  const cameraRef = useRef<typeof Camera>(null);
   const getLocationInfo = useLocation();
   const { cameraType, flashMode, zoom, toggleCameraType, toggleFlash, takePicture } = useCamera(cameraRef);
 
