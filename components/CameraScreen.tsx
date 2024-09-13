@@ -4,8 +4,8 @@ import { Camera } from 'expo-camera/legacy';
 import { FontAwesome } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import * as MediaLibrary from 'expo-media-library';
-import * as ImagePicker from 'expo-image-picker';
 import { captureRef } from 'react-native-view-shot';
+import * as IntentLauncher from 'expo-intent-launcher';
 import useLocation from '../hooks/useLocation';
 import useCamera from '../hooks/useCamera';
 import GridOverlay from './GridOverlay';
@@ -82,18 +82,15 @@ export default function CameraScreen() {
   const openGallery = async () => {
     if (hasMediaLibraryPermission) {
       try {
-        const result = await ImagePicker.launchImageLibraryAsync({
-          mediaTypes: ImagePicker.MediaTypeOptions.Images,
-          allowsEditing: false,
-          aspect: [4, 3],
-          quality: 1,
-        });
-
-        if (!result.canceled) {
-          // Here you can handle the selected image
-          // For example, you could display it or send it to a server
-          console.log(result.assets[0].uri);
-          Alert.alert("Success", "Image selected from gallery!");
+        if (Platform.OS === 'ios') {
+          // For iOS, we'll use the photos app
+          await MediaLibrary.presentPermissionsPickerAsync();
+        } else if (Platform.OS === 'android') {
+          // For Android, we'll use an intent to open the gallery
+          await IntentLauncher.startActivityAsync('android.intent.action.VIEW', {
+            data: 'content://media/internal/images/media',
+            flags: 1,
+          });
         }
       } catch (error) {
         console.error("Error opening gallery:", error);
