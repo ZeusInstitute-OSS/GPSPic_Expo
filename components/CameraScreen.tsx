@@ -92,18 +92,32 @@ export default function CameraScreen() {
       const overlayUri = await new Promise((resolve) => {
         const OverlayComponent = () => (
           <ViewShot ref={viewShotRef} options={{ format: 'jpg', quality: 1 }}>
-            <ImageBackground source={{ uri: photo.uri }} style={{ width: cameraDimensions.width, height: cameraDimensions.height }}>
+            <View style={{ width: cameraDimensions.width, height: cameraDimensions.height }}>
+              <ImageBackground 
+                source={{ uri: photo.uri }} 
+                style={{ width: '100%', height: '100%', alignSelf: 'center' }}
+              />
               <View style={{
                 position: 'absolute',
-                bottom: 0,
-                left: 0,
-                right: 0,
-                backgroundColor: 'rgba(0,0,0,0.5)',
-                padding: 10,
+                bottom: 10,
+                left: 10,
+                right: 10,
+                height: cameraDimensions.height, // Approximately 30% of the image height
+                overflow: 'hidden',
               }}>
-                <Text style={{ color: 'white', fontSize: 12 }}>{locationText}</Text>
+                <View style={{
+                  position: 'absolute',
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  backgroundColor: 'rgba(0,0,0,0.2)', // Reduced opacity from 0.5 to 0.3
+                  borderRadius: 20,
+                  padding: 10,
+                }}>
+                  <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}>{locationText}</Text>
+                </View>
               </View>
-            </ImageBackground>
+            </View>
           </ViewShot>
         );
 
@@ -127,7 +141,7 @@ export default function CameraScreen() {
       Alert.alert("Error", "Failed to take picture. Please try again.");
     }
   };
- 
+
   const openGallery = async () => {
     if (hasMediaLibraryPermission) {
       try {
@@ -287,8 +301,5 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: '100%',
-  },
-  cameraPreview: {
-    flex: 0.8,
   },
 });
