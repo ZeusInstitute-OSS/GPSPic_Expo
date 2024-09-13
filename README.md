@@ -55,7 +55,7 @@ nvm use node
 ### Install Deps
 
 ```
-npx expo install expo-status-bar react-native react-native-paper @expo/vector-icons expo-camera expo-location expo-media-library expo-file-system expo-sharing expo-image-manipulator expo-screen-orientation react-native-web react-dom @expo/metro-runtime react-native-view-shot
+npx expo install expo-status-bar react-native react-native-paper @expo/vector-icons expo-camera expo-location expo-media-library expo-file-system expo-sharing expo-image-manipulator expo-screen-orientation react-native-web react-dom @expo/metro-runtime react-native-view-shot expo-image-picker
 ```
 
 ### Run App
