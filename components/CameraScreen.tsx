@@ -64,11 +64,27 @@ export default function CameraScreen() {
     return DESIRED_RATIO;
   };
 
+  const createCompositeImage = async (photoUri: string) => {
+    const imageHeight = Dimensions.get('window').height;
+    const imageWidth = Dimensions.get('window').width;
+    const locationInfoHeight = imageHeight * 0.2;
+    const gap = 10; // Gap between photo and location info
+
+    return await captureRef(previewRef, {
+      format: 'jpg',
+      height: imageHeight,
+      width: imageWidth,
+      quality: 1,
+    });
+  };
+
   const handleCapture = async () => {
     try {
       const photo = await takePicture();
       if (photo) {
-        await MediaLibrary.saveToLibraryAsync(photo.uri);
+        const compositeImage = await createCompositeImage(photo.uri);
+
+        const asset = await MediaLibrary.saveToLibraryAsync(compositeImage);        
         Alert.alert("Success", "Photo saved to gallery!");
       } else {
         throw new Error("Failed to take picture");
@@ -153,7 +169,10 @@ export default function CameraScreen() {
             <Picker.Item label="Golden Ratio" value="golden" />
           </Picker>
         </View>
-        <LocationInfo location={locationInfo.location} address={locationInfo.address} />
+        <View style={styles.locationInfoContainer} ref={previewRef}>
+          <View style={styles.cameraPreview} />
+          <LocationInfo location={locationInfo.location} address={locationInfo.address} />
+        </View>
       </View>
       <View style={styles.bottomButtonContainer}>
         {renderGalleryButton()}
@@ -215,5 +234,15 @@ const styles = StyleSheet.create({
     width: 150,
     color: 'white',
     backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  locationInfoContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: '100%',
+  },
+  cameraPreview: {
+    flex: 0.8,
   },
 });
