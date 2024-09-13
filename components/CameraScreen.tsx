@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { StyleSheet, View, TouchableOpacity, Alert, Dimensions, Platform, StatusBar } from 'react-native';
+import { ImageBackground, Text, StyleSheet, View, TouchableOpacity, Alert, Dimensions, Platform, StatusBar } from 'react-native';
 import { Camera } from 'expo-camera/legacy';
 import { FontAwesome } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import * as MediaLibrary from 'expo-media-library';
-import { captureRef } from 'react-native-view-shot';
+import ViewShot from 'react-native-view-shot';
 import * as IntentLauncher from 'expo-intent-launcher';
 import useLocation from '../hooks/useLocation';
 import useCamera from '../hooks/useCamera';
@@ -19,8 +19,9 @@ export default function CameraScreen() {
   const [isRatioSet, setIsRatioSet] = useState(false);
   const [cameraDimensions, setCameraDimensions] = useState({ width: 0, height: 0 });
   const [hasMediaLibraryPermission, setHasMediaLibraryPermission] = useState(false);
+  const [cameraOverlay, setCameraOverlay] = useState(null);
   const cameraRef = useRef(null);
-  const previewRef = useRef(null);
+  const viewShotRef = useRef(null);
   const locationInfo = useLocation();
   const { cameraType, flashMode, zoom, toggleCameraType, toggleFlash, takePicture } = useCamera(cameraRef);
 
@@ -63,38 +64,68 @@ export default function CameraScreen() {
     }
     return DESIRED_RATIO;
   };
-
-  const createCompositeImage = async (photoUri: string) => {
-    const imageHeight = Dimensions.get('window').height;
-    const imageWidth = Dimensions.get('window').width;
-    const locationInfoHeight = imageHeight * 0.2;
-    const gap = 10; // Gap between photo and location info
-
-    return await captureRef(previewRef, {
-      format: 'jpg',
-      height: imageHeight,
-      width: imageWidth,
-      quality: 1,
-    });
-  };
-
+  
   const handleCapture = async () => {
     try {
+      // Take the picture
       const photo = await takePicture();
-      if (photo) {
-        const compositeImage = await createCompositeImage(photo.uri);
-
-        const asset = await MediaLibrary.saveToLibraryAsync(compositeImage);        
-        Alert.alert("Success", "Photo saved to gallery!");
-      } else {
+      if (!photo) {
         throw new Error("Failed to take picture");
       }
+
+      // Create location text
+      const locationText = [
+        `${locationInfo.address?.city || ''}, ${locationInfo.address?.region || ''}, ${locationInfo.address?.country || ''}`,
+        `${new Date().toLocaleString()}`,
+        `Lat: ${locationInfo.location?.coords.latitude.toFixed(6) || ''}, Long: ${locationInfo.location?.coords.longitude.toFixed(6) || ''}`,
+        `${locationInfo.address?.name || ''}`
+      ].filter(Boolean).join('\n');
+
+      // Create a promise to capture the ViewShot
+      const captureViewShot = () => new Promise((resolve) => {
+        viewShotRef.current.capture().then(resolve);
+      });
+
+      // Render the component with ImageBackground and capture it
+      const overlayUri = await new Promise((resolve) => {
+        const OverlayComponent = () => (
+          <ViewShot ref={viewShotRef} options={{ format: 'jpg', quality: 1 }}>
+            <ImageBackground source={{ uri: photo.uri }} style={{ width: cameraDimensions.width, height: cameraDimensions.height }}>
+              <View style={{
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                right: 0,
+                backgroundColor: 'rgba(0,0,0,0.5)',
+                padding: 10,
+              }}>
+                <Text style={{ color: 'white', fontSize: 12 }}>{locationText}</Text>
+              </View>
+            </ImageBackground>
+          </ViewShot>
+        );
+
+        // Set the OverlayComponent to the state
+        setCameraOverlay(<OverlayComponent />);
+
+        // Capture the ViewShot after a short delay to ensure it's rendered
+        setTimeout(async () => {
+          const uri = await captureViewShot();
+          setCameraOverlay(null);
+          resolve(uri);
+        }, 100);
+      });
+
+      // Save the final image to the gallery
+      await MediaLibrary.saveToLibraryAsync(overlayUri);
+
+      Alert.alert("Success", "Photo with location overlay saved to gallery!");
     } catch (error) {
       console.error("Error taking picture:", error);
       Alert.alert("Error", "Failed to take picture. Please try again.");
     }
   };
-
+ 
   const openGallery = async () => {
     if (hasMediaLibraryPermission) {
       try {
@@ -169,10 +200,10 @@ export default function CameraScreen() {
             <Picker.Item label="Golden Ratio" value="golden" />
           </Picker>
         </View>
-        <View style={styles.locationInfoContainer} ref={previewRef}>
-          <View style={styles.cameraPreview} />
+        <View style={styles.locationInfoContainer}>
           <LocationInfo location={locationInfo.location} address={locationInfo.address} />
         </View>
+        {cameraOverlay}
       </View>
       <View style={styles.bottomButtonContainer}>
         {renderGalleryButton()}
