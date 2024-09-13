@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { ImageBackground, Text, StyleSheet, View, TouchableOpacity, Alert, Dimensions, Platform, StatusBar } from 'react-native';
 import { Camera } from 'expo-camera/legacy';
 import { FontAwesome } from '@expo/vector-icons';
+import { MaterialIcons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import * as MediaLibrary from 'expo-media-library';
 import ViewShot from 'react-native-view-shot';
@@ -24,6 +25,7 @@ export default function CameraScreen() {
   const viewShotRef = useRef(null);
   const locationInfo = useLocation();
   const { cameraType, flashMode, zoom, toggleCameraType, toggleFlash, takePicture } = useCamera(cameraRef);
+  const [isFlashPressed, setIsFlashPressed] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -150,10 +152,18 @@ export default function CameraScreen() {
 
   const getFlashIcon = () => {
     switch (flashMode) {
-      case Camera.Constants.FlashMode.on: return 'bolt';
-      case Camera.Constants.FlashMode.off: return 'xmark';
-      case Camera.Constants.FlashMode.auto: return 'cloud-bolt';
+      case Camera.Constants.FlashMode.on: return 'flashlight-on';
+      case Camera.Constants.FlashMode.off: return 'flashlight-off';
+      case Camera.Constants.FlashMode.auto: return 'highlight';
     }
+  };
+
+  const handleFlashToggle = () => {
+    setIsFlashPressed(true);
+    setTimeout(() => {
+      setIsFlashPressed(false);
+      toggleFlash();
+    }, 150);
   };
 
   const renderGalleryButton = () => {
@@ -187,8 +197,11 @@ export default function CameraScreen() {
         />
         <GridOverlay type={gridType} />
         <View style={styles.topButtonContainer}>
-          <TouchableOpacity style={styles.iconButton} onPress={toggleFlash}>
-            <FontAwesome name={getFlashIcon()} size={24} color="white" />
+        <TouchableOpacity 
+            style={[styles.iconButton, isFlashPressed && styles.iconButtonPressed]} 
+            onPress={handleFlashToggle}
+          >
+            <MaterialIcons name={getFlashIcon()} size={24} color="white" />
           </TouchableOpacity>
           <Picker
             selectedValue={gridType}
@@ -245,7 +258,9 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.5)',
   },
   captureButton: {
     width: 70,
