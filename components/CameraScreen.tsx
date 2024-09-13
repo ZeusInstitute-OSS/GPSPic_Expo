@@ -5,6 +5,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import * as MediaLibrary from 'expo-media-library';
 import { captureRef } from 'react-native-view-shot';
+import * as IntentLauncher from 'expo-intent-launcher';
 import useLocation from '../hooks/useLocation';
 import useCamera from '../hooks/useCamera';
 import GridOverlay from './GridOverlay';
@@ -17,12 +18,18 @@ export default function CameraScreen() {
   const [gridType, setGridType] = useState('none');
   const [isRatioSet, setIsRatioSet] = useState(false);
   const [cameraDimensions, setCameraDimensions] = useState({ width: 0, height: 0 });
+  const [hasMediaLibraryPermission, setHasMediaLibraryPermission] = useState(false);
   const cameraRef = useRef(null);
   const previewRef = useRef(null);
   const locationInfo = useLocation();
   const { cameraType, flashMode, zoom, toggleCameraType, toggleFlash, takePicture } = useCamera(cameraRef);
 
   useEffect(() => {
+    (async () => {
+      const { status } = await MediaLibrary.requestPermissionsAsync();
+      setHasMediaLibraryPermission(status === 'granted');
+    })();
+
     const updateCameraDimensions = () => {
       const screenWidth = Dimensions.get('window').width;
       const screenHeight = Dimensions.get('window').height;
@@ -72,14 +79,25 @@ export default function CameraScreen() {
     }
   };
 
-
   const openGallery = async () => {
-    const { status } = await MediaLibrary.requestPermissionsAsync();
-    if (status === 'granted') {
-      const asset = await MediaLibrary.getAssetsAsync({ first: 1, sortBy: ['creationTime'] });
-      if (asset.assets.length > 0) {
-        await MediaLibrary.openAssetAsync(asset.assets[0].id);
+    if (hasMediaLibraryPermission) {
+      try {
+        if (Platform.OS === 'ios') {
+          // For iOS, we'll use the photos app
+          await MediaLibrary.presentPermissionsPickerAsync();
+        } else if (Platform.OS === 'android') {
+          // For Android, we'll use an intent to open the gallery
+          await IntentLauncher.startActivityAsync('android.intent.action.VIEW', {
+            data: 'content://media/internal/images/media',
+            flags: 1,
+          });
+        }
+      } catch (error) {
+        console.error("Error opening gallery:", error);
+        Alert.alert("Error", "Failed to open gallery. Please try again.");
       }
+    } else {
+      Alert.alert("Permission Required", "Please grant permission to access your media library.");
     }
   };
 
@@ -89,6 +107,18 @@ export default function CameraScreen() {
       case Camera.Constants.FlashMode.off: return 'xmark';
       case Camera.Constants.FlashMode.auto: return 'cloud-bolt';
     }
+  };
+
+  const renderGalleryButton = () => {
+    if (Platform.OS === 'web') {
+      return null;
+    }
+
+    return (
+      <TouchableOpacity style={styles.iconButton} onPress={openGallery}>
+        <FontAwesome name="image" size={24} color="white" />
+      </TouchableOpacity>
+    );
   };
 
   return (
@@ -126,9 +156,7 @@ export default function CameraScreen() {
         <LocationInfo location={locationInfo.location} address={locationInfo.address} />
       </View>
       <View style={styles.bottomButtonContainer}>
-        <TouchableOpacity style={styles.iconButton} onPress={openGallery}>
-          <FontAwesome name="image" size={24} color="white" />
-        </TouchableOpacity>
+        {renderGalleryButton()}
         <TouchableOpacity style={styles.captureButton} onPress={handleCapture}>
           <View style={styles.captureButtonInner} />
         </TouchableOpacity>
