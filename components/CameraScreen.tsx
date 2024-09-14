@@ -31,10 +31,9 @@ export default function CameraScreen() {
   const [cameraDimensions, setCameraDimensions] = useState({ width: 0, height: 0 });
   const [hasMediaLibraryPermission, setHasMediaLibraryPermission] = useState(false);
   const cameraRef = useRef(null);
-  const previewRef = useRef(null);
+  const wrapperRef = useRef(null);
   const locationInfo = useLocation();
   const { cameraType, flashMode, zoom, toggleCameraType, toggleFlash, takePicture } = useCamera(cameraRef);
-  const wrapperRef = useRef(null);
 
   useEffect(() => {
     (async () => {
@@ -76,18 +75,22 @@ export default function CameraScreen() {
     return DESIRED_RATIO;
   };
 
-  
   const handleCapture = async () => {
     try {
       if (wrapperRef.current) {
         const capturedImage = await captureRef(wrapperRef, {
           format: 'jpg',
           quality: 0.8,
+          result: 'tmpfile',
         });
 
         if (capturedImage) {
-          await MediaLibrary.saveToLibraryAsync(capturedImage);
-          Alert.alert("Success", "Photo with location overlay saved to gallery!");
+          if (hasMediaLibraryPermission) {
+            await MediaLibrary.saveToLibraryAsync(capturedImage);
+            Alert.alert("Success", "Photo with location overlay saved to gallery!");
+          } else {
+            Alert.alert("Permission Required", "Please grant permission to save photos to your gallery.");
+          }
         } else {
           throw new Error("Failed to capture image");
         }
@@ -145,7 +148,6 @@ export default function CameraScreen() {
       <CameraWrapper
         ref={wrapperRef}
         locationInfo={locationInfo}
-        collapsable={false} 
         style={[
           styles.cameraContainer,
           { width: cameraDimensions.width, height: cameraDimensions.height }
@@ -239,10 +241,11 @@ const styles = StyleSheet.create({
   },
   locationOverlay: {
     position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
+    bottom: 10,
+    left: 10,
+    right: 10,
     backgroundColor: 'rgba(0,0,0,0.5)',
     padding: 10,
+    borderRadius: 5,
   },
 });
