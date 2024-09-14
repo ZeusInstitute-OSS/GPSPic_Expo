@@ -66,16 +66,23 @@ export default function CameraScreen() {
 
   const handleCapture = async () => {
     try {
-      const photo = await takePicture();
-      if (photo) {
-        await MediaLibrary.saveToLibraryAsync(photo.uri);
-        Alert.alert("Success", "Photo saved to gallery!");
-      } else {
-        throw new Error("Failed to take picture");
+      if (cameraRef.current) {
+        // Capture the entire view including the camera preview and overlays
+        const capturedImage = await captureRef(previewRef, {
+          format: 'jpg',
+          quality: 0.8,
+        });
+
+        if (capturedImage) {
+          await MediaLibrary.saveToLibraryAsync(capturedImage);
+          Alert.alert("Success", "Photo with location overlay saved to gallery!");
+        } else {
+          throw new Error("Failed to capture image");
+        }
       }
     } catch (error) {
-      console.error("Error taking picture:", error);
-      Alert.alert("Error", "Failed to take picture. Please try again.");
+      console.error("Error capturing picture:", error);
+      Alert.alert("Error", "Failed to capture picture. Please try again.");
     }
   };
 
@@ -124,6 +131,8 @@ export default function CameraScreen() {
   return (
     <View style={styles.container}>
       <View 
+        ref={previewRef}
+        collapsable={false} 
         style={[
           styles.cameraContainer,
           { width: cameraDimensions.width, height: cameraDimensions.height }
