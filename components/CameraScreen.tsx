@@ -14,6 +14,17 @@ import LocationInfo from './LocationInfo';
 const DESIRED_RATIO = '16:9';
 const CONTROL_HEIGHT = 100;
 
+const CameraWrapper = React.forwardRef(({ children, locationInfo, style }, ref) => (
+  <View ref={ref} collapsable={false} style={style}>
+    {children}
+    <LocationInfo 
+      location={locationInfo.location} 
+      address={locationInfo.address}
+      style={styles.locationOverlay}
+    />
+  </View>
+));
+
 export default function CameraScreen() {
   const [gridType, setGridType] = useState('none');
   const [isRatioSet, setIsRatioSet] = useState(false);
@@ -23,6 +34,7 @@ export default function CameraScreen() {
   const previewRef = useRef(null);
   const locationInfo = useLocation();
   const { cameraType, flashMode, zoom, toggleCameraType, toggleFlash, takePicture } = useCamera(cameraRef);
+  const wrapperRef = useRef(null);
 
   useEffect(() => {
     (async () => {
@@ -64,11 +76,11 @@ export default function CameraScreen() {
     return DESIRED_RATIO;
   };
 
+  
   const handleCapture = async () => {
     try {
-      if (cameraRef.current) {
-        // Capture the entire view including the camera preview and overlays
-        const capturedImage = await captureRef(previewRef, {
+      if (wrapperRef.current) {
+        const capturedImage = await captureRef(wrapperRef, {
           format: 'jpg',
           quality: 0.8,
         });
@@ -130,8 +142,9 @@ export default function CameraScreen() {
 
   return (
     <View style={styles.container}>
-      <View 
-        ref={previewRef}
+      <CameraWrapper
+        ref={wrapperRef}
+        locationInfo={locationInfo}
         collapsable={false} 
         style={[
           styles.cameraContainer,
@@ -162,8 +175,7 @@ export default function CameraScreen() {
             <Picker.Item label="Golden Ratio" value="golden" />
           </Picker>
         </View>
-        <LocationInfo location={locationInfo.location} address={locationInfo.address} />
-      </View>
+      </CameraWrapper>
       <View style={styles.bottomButtonContainer}>
         {renderGalleryButton()}
         <TouchableOpacity style={styles.captureButton} onPress={handleCapture}>
@@ -224,5 +236,13 @@ const styles = StyleSheet.create({
     width: 150,
     color: 'white',
     backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  locationOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    padding: 10,
   },
 });
