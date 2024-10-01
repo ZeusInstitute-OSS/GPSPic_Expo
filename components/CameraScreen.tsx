@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { StyleSheet, View, TouchableOpacity, Alert, Dimensions, Platform, StatusBar, Button, Text } from 'react-native';
-import { CameraView, CameraType } from 'expo-camera';
 import { Camera } from 'expo-camera/legacy';
 import { FontAwesome } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
@@ -11,6 +10,7 @@ import useCamera from '../hooks/useCamera';
 import GridOverlay from './GridOverlay';
 import LocationInfo from './LocationInfo';
 import { FlashMode } from 'expo-camera/legacy';
+import ViewShot from 'react-native-view-shot';
 
 const DESIRED_RATIO = '16:9';
 const CONTROL_HEIGHT = 100;
@@ -21,7 +21,7 @@ export default function CameraScreen() {
   const [cameraDimensions, setCameraDimensions] = useState({ width: 0, height: 0 });
   const [hasMediaLibraryPermission, setHasMediaLibraryPermission] = useState(false);
   const cameraRef = useRef<Camera>(null);
-  const previewRef = useRef(null);
+  const viewShotRef = useRef(null);
   const locationInfo = useLocation();
   const { cameraType, flashMode, zoom, toggleCameraType, toggleFlash, takePicture, permission, requestPermission } = useCamera(cameraRef);
 
@@ -61,12 +61,18 @@ export default function CameraScreen() {
 
   const handleCapture = async () => {
     try {
-      const photo = await takePicture();
-      if (photo) {
-        await MediaLibrary.saveToLibraryAsync(photo.uri);
-        Alert.alert("Success", "Photo saved to gallery!");
+      if (!viewShotRef.current) {
+        throw new Error("ViewShot ref is not available");
+      }
+
+      // Capture the camera view with only the location overlay
+      const uri = await viewShotRef.current.capture();
+      
+      if (uri) {
+        await MediaLibrary.saveToLibraryAsync(uri);
+        Alert.alert("Success", "Photo with location overlay saved to gallery!");
       } else {
-        throw new Error("Failed to take picture");
+        throw new Error("Failed to capture view");
       }
     } catch (error) {
       console.error("Error taking picture:", error);
@@ -135,14 +141,25 @@ export default function CameraScreen() {
           { width: cameraDimensions.width, height: cameraDimensions.height }
         ]}
       >
-        <Camera 
+        {/* This ViewShot component only wraps the camera and location info */}
+        <ViewShot
+          ref={viewShotRef}
+          options={{ format: "jpg", quality: 0.9 }}
           style={StyleSheet.absoluteFillObject}
-          type={cameraType}
-          flashMode={flashMode}
-          ref={cameraRef}
-          onCameraReady={prepareRatio}
-        />
+        >
+          <Camera 
+            style={StyleSheet.absoluteFillObject}
+            type={cameraType}
+            flashMode={flashMode}
+            ref={cameraRef}
+            onCameraReady={prepareRatio}
+          />
+          <LocationInfo location={locationInfo.location} address={locationInfo.address} />
+        </ViewShot>
+        
+        {/* Grid overlay outside of ViewShot */}
         <GridOverlay type={gridType} />
+
         <View style={styles.topButtonContainer}>
           <TouchableOpacity style={styles.iconButton} onPress={toggleFlash}>
             <FontAwesome name={getFlashIcon()} size={24} color="white" />
@@ -157,7 +174,6 @@ export default function CameraScreen() {
             <Picker.Item label="Golden Ratio" value="golden" />
           </Picker>
         </View>
-        <LocationInfo location={locationInfo.location} address={locationInfo.address} />
       </View>
       <View style={styles.bottomButtonContainer}>
         {renderGalleryButton()}
@@ -180,8 +196,13 @@ const styles = StyleSheet.create({
   cameraContainer: {
     alignSelf: 'center',
     marginTop: StatusBar.currentHeight,
+    overflow: 'hidden', // Ensure nothing renders outside the container
   },
   topButtonContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
     flexDirection: 'row',
     justifyContent: 'space-between',
     margin: 20,
