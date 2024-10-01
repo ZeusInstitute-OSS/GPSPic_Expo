@@ -66,7 +66,11 @@ export default function CameraScreen() {
       }
 
       // Capture the camera view with only the location overlay
-      const uri = await viewShotRef.current.capture();
+      const uri = await viewShotRef.current.capture({
+        quality: 1,
+        format: "jpg",
+        result: "tmpfile",
+      });
       
       if (uri) {
         await MediaLibrary.saveToLibraryAsync(uri);
@@ -141,26 +145,51 @@ export default function CameraScreen() {
           { width: cameraDimensions.width, height: cameraDimensions.height }
         ]}
       >
-        {/* This ViewShot component only wraps the camera and location info */}
         <ViewShot
           ref={viewShotRef}
-          options={{ format: "jpg", quality: 0.9 }}
-          style={StyleSheet.absoluteFillObject}
+          options={{
+            quality: 1,
+            format: "jpg",
+            result: "tmpfile",
+          }}
+          style={[
+            StyleSheet.absoluteFillObject,
+            { zIndex: 1 }  // Ensure ViewShot container is on top
+          ]}
         >
           <Camera 
-            style={StyleSheet.absoluteFillObject}
+            style={[
+              StyleSheet.absoluteFillObject,
+              { zIndex: 1 }  // Ensure Camera is rendered
+            ]}
             type={cameraType}
             flashMode={flashMode}
             ref={cameraRef}
             onCameraReady={prepareRatio}
           />
-          <LocationInfo location={locationInfo.location} address={locationInfo.address} />
+          <View style={[
+            StyleSheet.absoluteFillObject,
+            { zIndex: 2 }  // Ensure LocationInfo is on top of Camera
+          ]}>
+            <LocationInfo 
+              location={locationInfo.location} 
+              address={locationInfo.address}
+            />
+          </View>
         </ViewShot>
         
         {/* Grid overlay outside of ViewShot */}
-        <GridOverlay type={gridType} />
-
-        <View style={styles.topButtonContainer}>
+        <View style={[
+          StyleSheet.absoluteFillObject,
+          { zIndex: 3 }  // Grid on top of everything in preview
+        ]}>
+          <GridOverlay type={gridType} />
+        </View>
+        
+        <View style={[
+          styles.topButtonContainer,
+          { zIndex: 4 }  // Controls on top of everything
+        ]}>
           <TouchableOpacity style={styles.iconButton} onPress={toggleFlash}>
             <FontAwesome name={getFlashIcon()} size={24} color="white" />
           </TouchableOpacity>
@@ -196,7 +225,7 @@ const styles = StyleSheet.create({
   cameraContainer: {
     alignSelf: 'center',
     marginTop: StatusBar.currentHeight,
-    overflow: 'hidden', // Ensure nothing renders outside the container
+    overflow: 'hidden',
   },
   topButtonContainer: {
     position: 'absolute',
