@@ -30,7 +30,7 @@ Initial App:
 - Proportions/Adjusting to different screens: *️⃣
 - Flash Modes: ✅
 - Permission Handling: *️⃣
-- Move away from legacy expo-camera: ❌
+- Move away from legacy expo-camera: *️⃣
 - Support being called from another app(and returning that pic): ❌
 
 ## Testing
@@ -39,10 +39,10 @@ Initial App:
 
 You can do this using:
 ```
-git clone https://github.com/ZeusInstitute-OSS/TrainerApp TrainerApp
+git clone https://github.com/ZeusInstitute-OSS/GPSPic_Expo GPSPic_Expo
 ```
 
-Now, enter the directory using `cd TrainerApp`
+Now, enter the directory using `cd GPSPic_Expo`
 ### Set up nvm 
 
 You can do this by following [these](https://github.com/nvm-sh/nvm#installing-and-updating) instructions
@@ -55,7 +55,7 @@ nvm use node
 ### Install Deps
 
 ```
-npx expo install expo-status-bar react-native react-native-paper @expo/vector-icons expo-camera expo-location expo-media-library expo-file-system expo-sharing expo-image-manipulator expo-screen-orientation react-native-web react-dom @expo/metro-runtime react-native-view-shot expo-intent-launcher
+npm install
 ```
 
 ### Run App

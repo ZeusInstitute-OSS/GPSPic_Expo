@@ -1,15 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { StyleSheet, View, TouchableOpacity, Alert, Dimensions, Platform, StatusBar } from 'react-native';
-import { Camera } from 'expo-camera/legacy';
+import { StyleSheet, View, TouchableOpacity, Alert, Dimensions, Platform, StatusBar, Button } from 'react-native';
+import { CameraView } from 'expo-camera';
 import { FontAwesome } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import * as MediaLibrary from 'expo-media-library';
-import { captureRef } from 'react-native-view-shot';
 import * as IntentLauncher from 'expo-intent-launcher';
 import useLocation from '../hooks/useLocation';
 import useCamera from '../hooks/useCamera';
 import GridOverlay from './GridOverlay';
 import LocationInfo from './LocationInfo';
+import { FlashMode } from 'expo-camera/legacy';
 
 const DESIRED_RATIO = '16:9';
 const CONTROL_HEIGHT = 100;
@@ -22,7 +22,7 @@ export default function CameraScreen() {
   const cameraRef = useRef(null);
   const previewRef = useRef(null);
   const locationInfo = useLocation();
-  const { cameraType, flashMode, zoom, toggleCameraType, toggleFlash, takePicture } = useCamera(cameraRef);
+  const { cameraType, flashMode, zoom, toggleCameraType, toggleFlash, takePicture, permission, requestPermission } = useCamera(cameraRef);
 
   useEffect(() => {
     (async () => {
@@ -55,13 +55,7 @@ export default function CameraScreen() {
   }, []);
 
   const prepareRatio = async () => {
-    if (Platform.OS === 'android' && cameraRef.current) {
-      const ratios = await cameraRef.current.getSupportedRatiosAsync();
-      const desiredRatio = ratios.find((ratio) => ratio === DESIRED_RATIO) || ratios[ratios.length - 1];
-      setIsRatioSet(true);
-      return desiredRatio;
-    }
-    return DESIRED_RATIO;
+    setIsRatioSet(true);
   };
 
   const handleCapture = async () => {
@@ -103,9 +97,9 @@ export default function CameraScreen() {
 
   const getFlashIcon = () => {
     switch (flashMode) {
-      case Camera.Constants.FlashMode.on: return 'bolt';
-      case Camera.Constants.FlashMode.off: return 'xmark';
-      case Camera.Constants.FlashMode.auto: return 'cloud-bolt';
+      case FlashMode.on: return 'bolt';
+      case FlashMode.off: return 'xmark';
+      case FlashMode.auto: return 'cloud-bolt';
     }
   };
 
@@ -121,6 +115,21 @@ export default function CameraScreen() {
     );
   };
 
+  if (!permission) {
+    // Camera permissions are still loading.
+    return <View />;
+  }
+
+  if (!permission.granted) {
+    // Camera permissions are not granted yet.
+    return (
+      <View>
+        <Text>We need your permission to show the camera</Text>
+        <Button onPress={requestPermission} title="grant permission" />
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <View 
@@ -129,13 +138,11 @@ export default function CameraScreen() {
           { width: cameraDimensions.width, height: cameraDimensions.height }
         ]}
       >
-        <Camera 
+        <CameraView 
           style={StyleSheet.absoluteFillObject}
           type={cameraType}
           flashMode={flashMode}
-          zoom={zoom}
           ref={cameraRef}
-          ratio={isRatioSet ? DESIRED_RATIO : undefined}
           onCameraReady={prepareRatio}
         />
         <GridOverlay type={gridType} />
@@ -166,54 +173,54 @@ export default function CameraScreen() {
       </View>
     </View>
   );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'black',
-  },
-  cameraContainer: {
-    alignSelf: 'center',
-    marginTop: StatusBar.currentHeight,
-  },
-  topButtonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    margin: 20,
-  },
-  bottomButtonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    height: CONTROL_HEIGHT,
-    backgroundColor: 'black',
-  },
-  iconButton: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-  },
-  captureButton: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-    backgroundColor: 'rgba(255,255,255,0.3)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  captureButtonInner: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: 'white',
-  },
-  picker: {
-    width: 150,
-    color: 'white',
-    backgroundColor: 'rgba(0,0,0,0.5)',
-  },
-});
+  }
+  
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: 'black',
+    },
+    cameraContainer: {
+      alignSelf: 'center',
+      marginTop: StatusBar.currentHeight,
+    },
+    topButtonContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      margin: 20,
+    },
+    bottomButtonContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-around',
+      alignItems: 'center',
+      height: CONTROL_HEIGHT,
+      backgroundColor: 'black',
+    },
+    iconButton: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: 50,
+      height: 50,
+      borderRadius: 25,
+      backgroundColor: 'rgba(0,0,0,0.5)',
+    },
+    captureButton: {
+      width: 70,
+      height: 70,
+      borderRadius: 35,
+      backgroundColor: 'rgba(255,255,255,0.3)',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    captureButtonInner: {
+      width: 60,
+      height: 60,
+      borderRadius: 30,
+      backgroundColor: 'white',
+    },
+    picker: {
+      width: 150,
+      color: 'white',
+      backgroundColor: 'rgba(0,0,0,0.5)',
+    },
+  });
