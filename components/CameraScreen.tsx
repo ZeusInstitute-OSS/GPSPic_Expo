@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { StyleSheet, View, TouchableOpacity, Alert, Dimensions, Platform, StatusBar, Button } from 'react-native';
-import { CameraView } from 'expo-camera';
+import { StyleSheet, View, TouchableOpacity, Alert, Dimensions, Platform, StatusBar, Button, Text } from 'react-native';
+import { CameraView, CameraType } from 'expo-camera';
+import { Camera } from 'expo-camera/legacy';
 import { FontAwesome } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import * as MediaLibrary from 'expo-media-library';
@@ -19,7 +20,7 @@ export default function CameraScreen() {
   const [isRatioSet, setIsRatioSet] = useState(false);
   const [cameraDimensions, setCameraDimensions] = useState({ width: 0, height: 0 });
   const [hasMediaLibraryPermission, setHasMediaLibraryPermission] = useState(false);
-  const cameraRef = useRef(null);
+  const cameraRef = useRef<Camera>(null);
   const previewRef = useRef(null);
   const locationInfo = useLocation();
   const { cameraType, flashMode, zoom, toggleCameraType, toggleFlash, takePicture, permission, requestPermission } = useCamera(cameraRef);
@@ -77,10 +78,8 @@ export default function CameraScreen() {
     if (hasMediaLibraryPermission) {
       try {
         if (Platform.OS === 'ios') {
-          // For iOS, we'll use the photos app
           await MediaLibrary.presentPermissionsPickerAsync();
         } else if (Platform.OS === 'android') {
-          // For Android, we'll use an intent to open the gallery
           await IntentLauncher.startActivityAsync('android.intent.action.VIEW', {
             data: 'content://media/internal/images/media',
             flags: 1,
@@ -116,12 +115,10 @@ export default function CameraScreen() {
   };
 
   if (!permission) {
-    // Camera permissions are still loading.
     return <View />;
   }
 
   if (!permission.granted) {
-    // Camera permissions are not granted yet.
     return (
       <View>
         <Text>We need your permission to show the camera</Text>
@@ -138,7 +135,7 @@ export default function CameraScreen() {
           { width: cameraDimensions.width, height: cameraDimensions.height }
         ]}
       >
-        <CameraView 
+        <Camera 
           style={StyleSheet.absoluteFillObject}
           type={cameraType}
           flashMode={flashMode}
@@ -173,54 +170,54 @@ export default function CameraScreen() {
       </View>
     </View>
   );
-  }
-  
-  const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: 'black',
-    },
-    cameraContainer: {
-      alignSelf: 'center',
-      marginTop: StatusBar.currentHeight,
-    },
-    topButtonContainer: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      margin: 20,
-    },
-    bottomButtonContainer: {
-      flexDirection: 'row',
-      justifyContent: 'space-around',
-      alignItems: 'center',
-      height: CONTROL_HEIGHT,
-      backgroundColor: 'black',
-    },
-    iconButton: {
-      alignItems: 'center',
-      justifyContent: 'center',
-      width: 50,
-      height: 50,
-      borderRadius: 25,
-      backgroundColor: 'rgba(0,0,0,0.5)',
-    },
-    captureButton: {
-      width: 70,
-      height: 70,
-      borderRadius: 35,
-      backgroundColor: 'rgba(255,255,255,0.3)',
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    captureButtonInner: {
-      width: 60,
-      height: 60,
-      borderRadius: 30,
-      backgroundColor: 'white',
-    },
-    picker: {
-      width: 150,
-      color: 'white',
-      backgroundColor: 'rgba(0,0,0,0.5)',
-    },
-  });
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: 'black',
+  },
+  cameraContainer: {
+    alignSelf: 'center',
+    marginTop: StatusBar.currentHeight,
+  },
+  topButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    margin: 20,
+  },
+  bottomButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    height: CONTROL_HEIGHT,
+    backgroundColor: 'black',
+  },
+  iconButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  captureButton: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    backgroundColor: 'rgba(255,255,255,0.3)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  captureButtonInner: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: 'white',
+  },
+  picker: {
+    width: 150,
+    color: 'white',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+});

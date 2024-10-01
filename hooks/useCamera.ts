@@ -1,16 +1,15 @@
-import { CameraView, useCameraPermissions } from 'expo-camera';
+import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import { FlashMode } from 'expo-camera/legacy';
-import { CameraType } from 'expo-image-picker';
 import { useState, useRef } from 'react';
 
 export default function useCamera(cameraRef: React.RefObject<CameraView>) {
-  const [cameraType, setCameraType] = useState<CameraType>(CameraType.back);
+  const [cameraType, setCameraType] = useState<CameraType>('back');
   const [flashMode, setFlashMode] = useState<FlashMode>(FlashMode.off);
   const [zoom, setZoom] = useState(0);
   const [permission, requestPermission] = useCameraPermissions();
 
   const toggleCameraType = () => {
-    setCameraType(current => (current === CameraType.back ? CameraType.front : CameraType.back));
+    setCameraType(current => (current === 'back' ? 'front' : 'back'));
   };
 
   const toggleFlash = () => {
